@@ -657,12 +657,16 @@ async function generarDocumento() {
 
           titulo2('Liga Pública del Proyecto Desplegado'),
           vineta(
-            'URL pública de producción (Frontend + Backend + WebSockets)',
-            '[ Pegar aquí la URL pública activa tras desplegar, ej. https://community360-cesarley.onrender.com ]'
+            'URL pública activa en la nube (Frontend + Backend + WebSockets)',
+            'https://community360-62t6.onrender.com'
           ),
           vineta(
-            'Ejecución local de respaldo',
-            'http://localhost:3000/login (servidor Express sirviendo el build de producción de Angular y el canal ws://localhost:3000/ws).'
+            'Canal WebSocket seguro en producción',
+            'wss://community360-62t6.onrender.com/ws'
+          ),
+          vineta(
+            'Repositorio de código fuente en GitHub',
+            'https://github.com/CesarLey/COMMUNITY360'
           ),
 
           titulo2('Credenciales Activas para Evaluación Docente'),
