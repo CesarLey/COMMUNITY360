@@ -1,0 +1,144 @@
+{
+  "run_id": "run_20261120065558",
+  "ejecutado_en": "2026-11-20T15:09:35.351Z",
+  "entradas": {
+    "usuarios_recibidos": 1068,
+    "interacciones_recibidas": 1000
+  },
+  "usuarios": {
+    "recibidos": 1068,
+    "aceptados": 1068,
+    "rechazados": 0,
+    "rechazos_por_motivo": {}
+  },
+  "interacciones": {
+    "recibidas": 1000,
+    "aceptadas": 207,
+    "rechazadas": 793,
+    "rechazos_por_motivo": {
+      "usuario_inexistente": 793
+    },
+    "etiquetas_generadas": 318
+  },
+  "catalogos_geograficos": {
+    "paises": 7,
+    "estados": 21,
+    "ciudades": 21
+  },
+  "transformaciones": {
+    "fechas_estandarizadas": 2136,
+    "usuarios_sin_consentimiento": 171,
+    "campos_geo_eliminados_usuarios": 684,
+    "valores_geo_descartados_interacciones": 543,
+    "interacciones_de_usuarios_sin_consentimiento": 26
+  },
+  "verificacion": {
+    "cuadra_usuarios": true,
+    "cuadra_interacciones": true
+  },
+  "calidad_antes": {
+    "usuarios": {
+      "registros": 1068,
+      "duplicados_por_id": 0,
+      "nulos_por_columna": {
+        "id_usuario": 0,
+        "alias": 0,
+        "fecha_ingreso": 0,
+        "pais": 0,
+        "estado": 0,
+        "ciudad": 0,
+        "latitud": 275,
+        "longitud": 275,
+        "zona_horaria": 0,
+        "rango_edad": 0,
+        "especie_fursona": 0,
+        "interes_principal": 0,
+        "plataforma_principal": 0,
+        "es_artista": 0,
+        "mensajes_30d": 0,
+        "reacciones_30d": 0,
+        "eventos_asistidos": 0,
+        "comisiones_compradas": 0,
+        "sentimiento_promedio": 0,
+        "ultima_actividad": 0,
+        "estatus": 0,
+        "consentimiento_datos": 0
+      },
+      "fechas_formato_dd_mm_aaaa": 1068,
+      "fechas_formato_iso": 0,
+      "sin_consentimiento": 171,
+      "sin_consentimiento_con_geo": 171
+    },
+    "interacciones": {
+      "registros": 1000,
+      "duplicados_por_id": 0,
+      "nulos_por_columna": {
+        "id_interaccion": 0,
+        "id_usuario": 0,
+        "timestamp": 0,
+        "canal": 0,
+        "tipo": 0,
+        "texto": 144,
+        "tema": 0,
+        "sentimiento": 0,
+        "idioma": 0,
+        "pais": 173,
+        "estado": 173,
+        "ciudad": 173,
+        "dispositivo": 0,
+        "longitud_texto": 0,
+        "reacciones_recibidas": 0,
+        "etiquetas": 231
+      },
+      "con_referencia_inexistente": 793
+    }
+  },
+  "calidad_despues": {
+    "usuarios": {
+      "registros": 1068,
+      "duplicados_por_id": 0,
+      "nulos_por_columna": {
+        "id_usuario": 0,
+        "alias": 0,
+        "fecha_ingreso": 0,
+        "id_ciudad": 171,
+        "latitud": 275,
+        "longitud": 275,
+        "rango_edad": 0,
+        "especie_fursona": 0,
+        "interes_principal": 0,
+        "plataforma_principal": 0,
+        "es_artista": 0,
+        "mensajes_30d": 0,
+        "reacciones_30d": 0,
+        "eventos_asistidos": 0,
+        "comisiones_compradas": 0,
+        "sentimiento_promedio": 0,
+        "ultima_actividad": 0,
+        "estatus": 0,
+        "consentimiento_datos": 0
+      },
+      "sin_consentimiento_con_geo": 0
+    },
+    "interacciones": {
+      "registros": 207,
+      "duplicados_por_id": 0,
+      "nulos_por_columna": {
+        "id_interaccion": 0,
+        "id_usuario": 0,
+        "timestamp": 0,
+        "canal": 0,
+        "tipo": 0,
+        "texto": 33,
+        "tema": 0,
+        "sentimiento": 0,
+        "idioma": 0,
+        "dispositivo": 0,
+        "longitud_texto": 0,
+        "reacciones_recibidas": 0
+      },
+      "con_referencia_inexistente": 0,
+      "columnas_geograficas": 0
+    }
+  }
+}

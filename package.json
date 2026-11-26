@@ -1,0 +1,27 @@
+{
+  "name": "community360",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Community 360 - ETL, persistencia híbrida (Turso + Firestore) y dashboard",
+  "scripts": {
+    "etl:clean": "node etl/clean.js",
+    "etl:load": "node etl/load.js",
+    "etl:all": "node etl/clean.js && node etl/load.js",
+    "seed:auth": "node scripts/sembrar_usuarios_auth.js",
+    "start": "node server/app.js",
+    "build:front": "cd frontend && ng build --configuration=production",
+    "test": "node --test tests/clean.test.js tests/auth.test.js tests/rest.test.js tests/ws.test.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "docx": "^9.16.0",
+    "dotenv": "^16.4.5",
+    "express": "^5.3.0",
+    "firebase-admin": "^12.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "ws": "^8.23.0"
+  }
+}

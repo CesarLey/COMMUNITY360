@@ -1,0 +1,83 @@
+Table paises {
+  id_pais integer [pk]
+  nombre text [not null, unique]
+}
+
+Table estados {
+  id_estado integer [pk]
+  nombre text [not null]
+  id_pais integer [not null]
+  indexes {
+    (id_pais, nombre) [unique]
+  }
+}
+
+Table ciudades {
+  id_ciudad integer [pk]
+  nombre text [not null]
+  id_estado integer [not null]
+  zona_horaria text [not null]
+  indexes {
+    (id_estado, nombre) [unique]
+  }
+}
+
+Table usuarios {
+  id_usuario text [pk, note: 'Formato U######']
+  alias text [not null, unique]
+  fecha_ingreso text [not null, note: 'aaaa-mm-dd']
+  id_ciudad integer [note: 'NULL si consentimiento_datos = no']
+  latitud real [note: 'NULL si consentimiento_datos = no']
+  longitud real [note: 'NULL si consentimiento_datos = no']
+  rango_edad text [not null]
+  especie_fursona text [not null]
+  interes_principal text [not null]
+  plataforma_principal text [not null]
+  es_artista integer [not null, note: '0 o 1']
+  mensajes_30d integer [not null]
+  reacciones_30d integer [not null]
+  eventos_asistidos integer [not null]
+  comisiones_compradas integer [not null]
+  sentimiento_promedio real [not null, note: '-1 a 1']
+  ultima_actividad text [not null, note: 'aaaa-mm-dd']
+  estatus text [not null, note: 'activo | en_riesgo | inactivo']
+  consentimiento_datos text [not null, note: 'si | no']
+}
+
+Table interacciones {
+  id_interaccion text [pk, note: 'Formato I#######']
+  id_usuario text [not null]
+  timestamp text [not null, note: 'ISO 8601 UTC']
+  canal text [not null]
+  tipo text [not null]
+  texto text
+  tema text [not null]
+  sentimiento real [not null, note: '-1 a 1']
+  idioma text
+  dispositivo text
+  longitud_texto integer [not null]
+  reacciones_recibidas integer [not null]
+}
+
+Table interaccion_etiqueta {
+  id_interaccion text [not null]
+  etiqueta text [not null]
+  indexes {
+    (id_interaccion, etiqueta) [pk]
+  }
+}
+
+Table usuarios_auth {
+  id_auth integer [pk, increment]
+  username text [not null, unique]
+  email text
+  password_hash text [not null]
+  rol text [not null, default: 'analista']
+  creado_en text [not null]
+}
+
+Ref: estados.id_pais > paises.id_pais
+Ref: ciudades.id_estado > estados.id_estado
+Ref: usuarios.id_ciudad > ciudades.id_ciudad
+Ref: interacciones.id_usuario > usuarios.id_usuario
+Ref: interaccion_etiqueta.id_interaccion > interacciones.id_interaccion [delete: cascade]

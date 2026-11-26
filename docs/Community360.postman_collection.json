@@ -1,0 +1,94 @@
+{
+  "info": {
+    "name": "Community 360 - Demo",
+    "description": "Colección de demostración. Ejecute primero '0. Login' (guarda el token automáticamente).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "idDemo", "value": "I9000001" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "0. Login (docente)",
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "const j = pm.response.json();",
+          "if (j.token) { pm.collectionVariables.set('token', j.token); }",
+          "pm.test('Login 200', () => pm.response.to.have.status(200));"
+        ]}
+      }],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"identificador\": \"lizandro.reyes\",\n  \"password\": \"lizandr0_reye$\"\n}" },
+        "url": "{{baseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "1. GET /api/auth/me",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/me" }
+    },
+    {
+      "name": "2. GET interacciones (paginado)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/interacciones?limit=5&offset=0" }
+    },
+    {
+      "name": "3. POST crear interacción (dispara WebSocket)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"id_interaccion\": \"{{idDemo}}\",\n  \"id_usuario\": \"U000001\",\n  \"canal\": \"Discord\",\n  \"tipo\": \"mensaje\",\n  \"texto\": \"Demo en vivo para el profesor\",\n  \"tema\": \"eventos_convenciones\",\n  \"sentimiento\": 0.85,\n  \"etiquetas\": [\"demo\", \"fase6\"]\n}" },
+        "url": "{{baseUrl}}/api/interacciones"
+      }
+    },
+    {
+      "name": "4. GET interacción por id",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/interacciones/{{idDemo}}" }
+    },
+    {
+      "name": "5. PUT actualizar interacción (dispara WebSocket)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"sentimiento\": -0.6,\n  \"texto\": \"Texto modificado desde Postman\"\n}" },
+        "url": "{{baseUrl}}/api/interacciones/{{idDemo}}"
+      }
+    },
+    {
+      "name": "6. DELETE eliminar interacción (dispara WebSocket)",
+      "request": { "method": "DELETE", "url": "{{baseUrl}}/api/interacciones/{{idDemo}}" }
+    },
+    {
+      "name": "7. POST usuario inexistente (integridad referencial → 400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"id_usuario\": \"U999999\",\n  \"canal\": \"Telegram\",\n  \"tipo\": \"mensaje\",\n  \"tema\": \"musica\",\n  \"sentimiento\": 0.5\n}" },
+        "url": "{{baseUrl}}/api/interacciones"
+      }
+    },
+    {
+      "name": "8. GET sin token (seguridad → 401)",
+      "request": { "auth": { "type": "noauth" }, "method": "GET", "url": "{{baseUrl}}/api/interacciones" }
+    },
+    {
+      "name": "Métricas",
+      "item": [
+        { "name": "KPIs", "request": { "method": "GET", "url": "{{baseUrl}}/api/metricas/kpis" } },
+        { "name": "Por canal", "request": { "method": "GET", "url": "{{baseUrl}}/api/metricas/por-canal" } },
+        { "name": "Mapa de calor", "request": { "method": "GET", "url": "{{baseUrl}}/api/metricas/mapa-calor" } },
+        { "name": "Sentimiento en el tiempo", "request": { "method": "GET", "url": "{{baseUrl}}/api/metricas/sentimiento-tiempo" } },
+        { "name": "Geografía (privacidad)", "request": { "method": "GET", "url": "{{baseUrl}}/api/metricas/geografia" } },
+        { "name": "Usuarios en riesgo", "request": { "method": "GET", "url": "{{baseUrl}}/api/metricas/usuarios-en-riesgo" } }
+      ]
+    }
+  ]
+}

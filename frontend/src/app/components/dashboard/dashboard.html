@@ -1,0 +1,918 @@
+<div class="app-shell">
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="sidebar__brand">
+      <div class="logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </div>
+      <div>
+        <div class="sidebar__name">Community 360</div>
+        <div class="sidebar__sub">Analítica Comunitaria</div>
+      </div>
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Módulos de la plataforma">
+      <span class="nav-label">Módulos</span>
+
+      <button
+        type="button"
+        class="nav-item"
+        [class.active]="activeView() === 'resumen'"
+        (click)="irASeccion('resumen')"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+          <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+          <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+          <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+        </svg>
+        <span>Resumen general</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-item"
+        [class.active]="activeView() === 'interacciones'"
+        (click)="irASeccion('interacciones')"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Interacciones</span>
+        <span class="nav-count tabular-nums">{{ kpis()?.total_interacciones ?? '—' }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-item"
+        [class.active]="activeView() === 'comunidad'"
+        (click)="irASeccion('comunidad')"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Comunidad y riesgo</span>
+        <span class="nav-count nav-count--alert tabular-nums">{{ kpis()?.usuarios_en_riesgo ?? '—' }}</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-item"
+        [class.active]="activeView() === 'mapa'"
+        (click)="irASeccion('mapa')"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+          <line x1="8" y1="2" x2="8" y2="18"></line>
+          <line x1="16" y1="6" x2="16" y2="22"></line>
+        </svg>
+        <span>Mapa de calor</span>
+        <span class="nav-count tabular-nums">{{ mapaGeo()?.ciudades?.length ?? '—' }}</span>
+      </button>
+    </nav>
+
+    <div class="sidebar__status">
+      <div class="status-row">
+        <span class="status-dot" [class.status-dot--on]="wsConnected$ | async"></span>
+        <span>{{ (wsConnected$ | async) ? 'Sincronización activa' : 'Reconectando flujo…' }}</span>
+      </div>
+      <small>Actualizado {{ lastSync() | date: 'HH:mm' }}</small>
+    </div>
+
+    <div class="sidebar__user" *ngIf="user() as u">
+      <div class="avatar">{{ initials(u.username) }}</div>
+      <div class="sidebar__user-info">
+        <span class="sidebar__user-name">{{ u.username }}</span>
+        <span class="sidebar__user-role">{{ rolLabel(u.rol) }}</span>
+      </div>
+      <button type="button" class="icon-btn" (click)="logout()" title="Cerrar sesión">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN AREA ================= -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="topbar__title">{{ tituloSeccion() }}</h1>
+        <p class="topbar__subtitle">{{ subtituloSeccion() }}</p>
+      </div>
+
+      <!-- Mobile section switcher -->
+      <div class="mobile-tabs">
+        <button type="button" [class.active]="activeView() === 'resumen'" (click)="irASeccion('resumen')">Resumen</button>
+        <button type="button" [class.active]="activeView() === 'interacciones'" (click)="irASeccion('interacciones')">Interacciones</button>
+        <button type="button" [class.active]="activeView() === 'comunidad'" (click)="irASeccion('comunidad')">Comunidad</button>
+        <button type="button" [class.active]="activeView() === 'mapa'" (click)="irASeccion('mapa')">Mapa</button>
+      </div>
+
+      <div class="topbar__actions">
+        <div class="live-badge" [class.live-badge--on]="wsConnected$ | async">
+          <span class="live-badge__dot"></span>
+          {{ (wsConnected$ | async) ? 'En tiempo real' : 'Reconectando…' }}
+        </div>
+
+        <button type="button" class="ghost-btn" (click)="refrescar()" title="Actualizar indicadores">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          class="ghost-btn"
+          (click)="toggleTheme()"
+          [title]="(theme$ | async) === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+        >
+          <svg *ngIf="(theme$ | async) === 'dark'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg *ngIf="(theme$ | async) === 'light'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <ng-template #sk><div class="skeleton skeleton--value"></div></ng-template>
+
+    <!-- ======================================================================= -->
+    <!-- APARTADO 1: RESUMEN GENERAL                                             -->
+    <!-- ======================================================================= -->
+    <main class="content view-fade" *ngIf="activeView() === 'resumen'">
+      <section class="kpi-grid" [class.kpi-grid--flash]="kpiFlash()">
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Miembros de la comunidad</span>
+            <div class="kpi__icon kpi__icon--indigo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums" *ngIf="!loading(); else sk">
+            {{ kpis()?.total_usuarios | number }}
+          </div>
+          <div class="kpi__foot">Perfiles activos registrados</div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Conversaciones analizadas</span>
+            <div class="kpi__icon kpi__icon--cyan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums" *ngIf="!loading(); else sk">
+            {{ kpis()?.total_interacciones | number }}
+          </div>
+          <div class="kpi__foot">Volumen acumulado multicanal</div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Sentimiento global</span>
+            <div class="kpi__icon kpi__icon--emerald">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums" *ngIf="!loading(); else sk">
+            {{ fmt(kpis()?.sentimiento_promedio) }}
+            <span class="pill" [ngClass]="sentPill(kpis()?.sentimiento_promedio || 0)">
+              {{ sentLabel(kpis()?.sentimiento_promedio || 0) }}
+            </span>
+          </div>
+          <div class="meter"><div class="meter__bar" [style.width.%]="sentPct()"></div></div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Alertas de retención</span>
+            <div class="kpi__icon kpi__icon--rose">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums" *ngIf="!loading(); else sk">
+            {{ kpis()?.usuarios_en_riesgo | number }}
+          </div>
+          <div class="kpi__foot">
+            <strong>{{ pctRiesgo() | number: '1.1-1' }}%</strong> requiere seguimiento
+          </div>
+        </article>
+      </section>
+
+      <section class="grid grid--2-1">
+        <article class="panel">
+          <header class="panel__head">
+            <div>
+              <h2>Evolución de sentimiento y volumen</h2>
+              <p>Índice diario de percepción (−1.0 a +1.0) frente a actividad registrada</p>
+            </div>
+            <span class="pill pill--neutral">Serie histórica</span>
+          </header>
+          <div class="chart chart--lg"><canvas #sentChart></canvas></div>
+        </article>
+
+        <article class="panel">
+          <header class="panel__head">
+            <div>
+              <h2>Participación por canal</h2>
+              <p>Distribución de conversaciones por plataforma</p>
+            </div>
+            <span class="pill pill--cyan">Multicanal</span>
+          </header>
+          <div class="chart chart--lg"><canvas #canalChart></canvas></div>
+        </article>
+      </section>
+
+      <section class="grid grid--2-1">
+        <article class="panel">
+          <header class="panel__head">
+            <div>
+              <h2>Matriz de interés · Canal × Tema</h2>
+              <p>Densidad de conversación por red social y categoría temática</p>
+            </div>
+          </header>
+          <div class="heatmap-wrap">
+            <table class="heatmap" *ngIf="matriz().length; else emptyHeat">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th *ngFor="let t of temas()" [title]="tema(t)">{{ tema(t) }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of canalesMatriz()">
+                  <th scope="row">{{ c }}</th>
+                  <td *ngFor="let t of temas()" [title]="c + ' · ' + tema(t) + ': ' + celda(c, t)">
+                    <div
+                      class="cell"
+                      [style.background]="intensidad(c, t) ? 'rgba(var(--heat-rgb),' + intensidad(c, t) + ')' : 'var(--heat-empty)'"
+                      [class.cell--strong]="intensidad(c, t) > 0.55"
+                    >
+                      {{ celda(c, t) || '' }}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #emptyHeat><div class="empty">Sin registros disponibles</div></ng-template>
+          </div>
+        </article>
+
+        <article class="panel">
+          <header class="panel__head">
+            <div>
+              <h2>Actividad reciente</h2>
+              <p>Movimientos captados durante la sesión actual</p>
+            </div>
+            <button type="button" class="link-btn" (click)="irASeccion('interacciones')">
+              Ver catálogo →
+            </button>
+          </header>
+
+          <ol class="timeline" *ngIf="actividad().length; else sinActividadResumen">
+            <li *ngFor="let e of actividad().slice(0, 6)" [class]="'timeline__item timeline__item--' + e.kind">
+              <span class="timeline__badge">{{ e.accion }}</span>
+              <div class="timeline__body">
+                <p>{{ e.detalle }}</p>
+                <time>{{ e.hora | date: 'HH:mm:ss' }}</time>
+              </div>
+            </li>
+          </ol>
+
+          <ng-template #sinActividadResumen>
+            <div class="empty empty--box">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+              </svg>
+              <p>Monitoreo activo</p>
+              <small>Las nuevas publicaciones y cambios en los canales se mostrarán aquí al instante.</small>
+            </div>
+          </ng-template>
+        </article>
+      </section>
+
+      <footer class="footer">&copy; 2026 Community 360 · Plataforma de Inteligencia de Comunidades</footer>
+    </main>
+
+    <!-- ======================================================================= -->
+    <!-- APARTADO 2: INTERACCIONES (EXCLUSIVO)                                   -->
+    <!-- ======================================================================= -->
+    <main class="content view-fade" *ngIf="activeView() === 'interacciones'">
+      <section class="kpi-grid kpi-grid--3">
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Interacciones encontradas</span>
+            <div class="kpi__icon kpi__icon--indigo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">{{ resumenSegmento().total_interacciones | number }}</div>
+          <div class="kpi__foot">
+            {{ hayFiltrosInteracciones() ? 'Coincidencias del segmento filtrado' : 'Total general de publicaciones' }}
+          </div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>{{ hayFiltrosInteracciones() ? 'Sentimiento del segmento' : 'Sentimiento global' }}</span>
+            <div class="kpi__icon kpi__icon--emerald">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">
+            {{ fmt(resumenSegmento().sentimiento_promedio) }}
+            <span class="pill" [ngClass]="sentPill(resumenSegmento().sentimiento_promedio)">
+              {{ sentLabel(resumenSegmento().sentimiento_promedio) }}
+            </span>
+          </div>
+          <div class="meter"><div class="meter__bar" [style.width.%]="sentSegmentoPct()"></div></div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Impacto y participación</span>
+            <div class="kpi__icon kpi__icon--cyan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">{{ resumenSegmento().total_reacciones | number }}</div>
+          <div class="kpi__foot">
+            Promedio de {{ resumenSegmento().promedio_reacciones }} reacciones por publicación
+          </div>
+        </article>
+      </section>
+
+      <section class="grid grid--3-1">
+        <article class="panel panel--flush">
+          <div class="toolbar">
+            <div class="toolbar__filters">
+              <div class="select-wrap">
+                <label for="f-canal">Canal</label>
+                <select
+                  id="f-canal"
+                  [value]="filtroCanal()"
+                  (change)="onFiltroCanal($any($event.target).value)"
+                >
+                  <option value="">Todos los canales</option>
+                  <option *ngFor="let c of catalogoCanales" [value]="c">{{ c }}</option>
+                </select>
+              </div>
+
+              <div class="select-wrap">
+                <label for="f-tema">Categoría temática</label>
+                <select
+                  id="f-tema"
+                  [value]="filtroTema()"
+                  (change)="onFiltroTema($any($event.target).value)"
+                >
+                  <option value="">Todas las temáticas</option>
+                  <option *ngFor="let t of catalogoTemas" [value]="t">{{ tema(t) }}</option>
+                </select>
+              </div>
+
+              <div class="select-wrap">
+                <label for="f-tipo">Tipo</label>
+                <select
+                  id="f-tipo"
+                  [value]="filtroTipo()"
+                  (change)="onFiltroTipo($any($event.target).value)"
+                >
+                  <option value="">Todos los tipos</option>
+                  <option *ngFor="let tp of catalogoTipos" [value]="tp">{{ tema(tp) }}</option>
+                </select>
+              </div>
+
+              <button
+                *ngIf="hayFiltrosInteracciones()"
+                type="button"
+                class="clear-btn"
+                (click)="limpiarFiltros()"
+              >
+                Limpiar filtros
+              </button>
+            </div>
+
+            <div class="toolbar__pagination">
+              <span class="range-label tabular-nums">{{ rangoMostrado() }}</span>
+              <button
+                type="button"
+                class="page-btn"
+                [disabled]="offset() === 0 || loadingTabla()"
+                (click)="paginaAnterior()"
+              >
+                Anterior
+              </button>
+              <span class="page-indicator tabular-nums">
+                {{ paginaActual() }} / {{ totalPaginas() }}
+              </span>
+              <button
+                type="button"
+                class="page-btn"
+                [disabled]="offset() + pageSize >= totalInteraccionesFiltro() || loadingTabla()"
+                (click)="paginaSiguiente()"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap table-wrap--tall">
+            <table class="table table--all-center">
+              <thead>
+                <tr>
+                  <th class="col-center">Folio</th>
+                  <th class="col-center">Miembro</th>
+                  <th class="col-center">Canal</th>
+                  <th class="col-center">Contenido y etiquetas</th>
+                  <th class="col-center">Temática</th>
+                  <th class="col-center">Sentimiento</th>
+                  <th class="col-center">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let i of interacciones()" [class.row-flash]="i.id_interaccion === flashId()">
+                  <td class="col-center"><code class="mono">{{ i.id_interaccion }}</code></td>
+                  <td class="col-center">
+                    <div class="strong">{{ i.alias || i.id_usuario }}</div>
+                    <span class="sub-meta">{{ tema(i.tipo) }}</span>
+                  </td>
+                  <td class="col-center"><span class="pill pill--neutral">{{ i.canal }}</span></td>
+                  <td class="msg-cell col-center">
+                    <p class="msg-text" [title]="i.texto || ''">{{ i.texto || 'Sin texto adjunto' }}</p>
+                    <div class="tag-row tag-row--center" *ngIf="i.etiquetas?.length">
+                      <span class="tag-chip" *ngFor="let tag of i.etiquetas.slice(0, 3)">#{{ tag }}</span>
+                    </div>
+                  </td>
+                  <td class="cap col-center">{{ tema(i.tema) }}</td>
+                  <td class="col-center">
+                    <span class="pill" [ngClass]="sentPill(i.sentimiento)">
+                      {{ fmt(i.sentimiento) }}
+                    </span>
+                  </td>
+                  <td class="col-center muted nowrap">{{ i.timestamp | date: 'dd MMM yyyy, HH:mm' }}</td>
+                </tr>
+                <tr *ngIf="!interacciones().length && !loadingTabla()">
+                  <td colspan="7" class="empty">No se encontraron interacciones con los criterios seleccionados.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <header class="panel__head">
+            <div>
+              <h2>Flujo en tiempo real</h2>
+              <p>Eventos captados al instante</p>
+            </div>
+            <span class="pill pill--indigo"><span class="live-dot"></span>Activo</span>
+          </header>
+
+          <ol class="timeline" *ngIf="actividad().length; else noLiveFeed">
+            <li *ngFor="let e of actividad()" [class]="'timeline__item timeline__item--' + e.kind">
+              <span class="timeline__badge">{{ e.accion }}</span>
+              <div class="timeline__body">
+                <p>{{ e.detalle }}</p>
+                <time>{{ e.hora | date: 'HH:mm:ss' }}</time>
+              </div>
+            </li>
+          </ol>
+
+          <ng-template #noLiveFeed>
+            <div class="empty empty--box">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+              </svg>
+              <p>Escuchando canales</p>
+              <small>Cualquier publicación nueva o actualización aparecerá aquí sin recargar la vista.</small>
+            </div>
+          </ng-template>
+        </article>
+      </section>
+
+      <footer class="footer">&copy; 2026 Community 360 · Plataforma de Inteligencia de Comunidades</footer>
+    </main>
+
+    <!-- ======================================================================= -->
+    <!-- APARTADO 3: COMUNIDAD Y RIESGO (EXCLUSIVO)                              -->
+    <!-- ======================================================================= -->
+    <main class="content view-fade" *ngIf="activeView() === 'comunidad'">
+      <section class="kpi-grid">
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Total de miembros</span>
+            <div class="kpi__icon kpi__icon--indigo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">{{ kpis()?.total_usuarios | number }}</div>
+          <div class="kpi__foot">Comunidad global registrada</div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Miembros estables</span>
+            <div class="kpi__icon kpi__icon--emerald">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">{{ usuariosEstables() | number }}</div>
+          <div class="kpi__foot">{{ pctSalud() | number: '1.1-1' }}% de retención saludable</div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>En riesgo de abandono</span>
+            <div class="kpi__icon kpi__icon--rose">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">{{ kpis()?.usuarios_en_riesgo | number }}</div>
+          <div class="kpi__foot"><strong>{{ pctRiesgo() | number: '1.1-1' }}%</strong> en atención prioritaria</div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Ubicación autorizada</span>
+            <div class="kpi__icon kpi__icon--cyan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">{{ totalConsentidos() | number }}</div>
+          <div class="kpi__foot">Miembros con consentimiento activo</div>
+        </article>
+      </section>
+
+      <section class="grid grid--2-1">
+        <article class="panel">
+          <header class="panel__head">
+            <div>
+              <h2>Principales ciudades de la audiencia</h2>
+              <p>Concentración urbana calculada únicamente sobre miembros con consentimiento de datos</p>
+            </div>
+            <button type="button" class="link-btn" (click)="irASeccion('mapa')">
+              Abrir mapa de calor →
+            </button>
+          </header>
+
+          <ul class="city-bars" *ngIf="geo()?.ciudades_top?.length; else sinGeo">
+            <li *ngFor="let c of (geo()?.ciudades_top || []).slice(0, 7)">
+              <div class="city-bars__meta">
+                <span class="strong">{{ c.ciudad }}</span>
+                <small>{{ c.estado }}, {{ c.pais }}</small>
+              </div>
+              <div class="city-bars__track">
+                <div class="city-bars__fill" [style.width.%]="pctCiudad(c.total_usuarios)"></div>
+              </div>
+              <span class="city-bars__val tabular-nums">{{ c.total_usuarios }}</span>
+            </li>
+          </ul>
+          <ng-template #sinGeo><div class="empty">Sin información geográfica disponible</div></ng-template>
+        </article>
+
+        <article class="panel">
+          <header class="panel__head">
+            <div>
+              <h2>Presencia por país</h2>
+              <p>Distribución regional autorizada</p>
+            </div>
+          </header>
+          <div class="chart chart--md"><canvas #geoChart></canvas></div>
+        </article>
+      </section>
+
+      <section class="panel panel--flush">
+        <header class="panel__head panel__head--pad">
+          <div>
+            <h2>Seguimiento de miembros en riesgo de abandono</h2>
+            <p>Ordenados por menor índice de satisfacción y menor actividad reciente para intervención oportuna</p>
+          </div>
+          <div class="head-badges">
+            <span class="pill pill--neutral tabular-nums">
+              Sentimiento medio: {{ fmt(resumenRiesgo().sentimiento_promedio) }}
+            </span>
+            <span class="pill pill--neutral tabular-nums">
+              Actividad media: {{ resumenRiesgo().mensajes_promedio_30d }} msj / 30d
+            </span>
+            <span class="pill pill--rose tabular-nums">
+              {{ resumenRiesgo().total_filtrados }} perfiles detectados
+            </span>
+          </div>
+        </header>
+
+        <div class="toolbar">
+          <div class="toolbar__filters">
+            <div class="select-wrap">
+              <label for="r-canal">Canal principal</label>
+              <select
+                id="r-canal"
+                [value]="filtroRiesgoPlataforma()"
+                (change)="onFiltroRiesgoPlataforma($any($event.target).value)"
+              >
+                <option value="">Todos los canales</option>
+                <option *ngFor="let c of catalogoCanales" [value]="c">{{ c }}</option>
+              </select>
+            </div>
+
+            <div class="select-wrap">
+              <label for="r-prioridad">Nivel de alerta</label>
+              <select
+                id="r-prioridad"
+                [value]="filtroRiesgoPrioridad()"
+                (change)="onFiltroRiesgoPrioridad($any($event.target).value)"
+              >
+                <option value="">Todos los niveles</option>
+                <option value="alta">Prioridad alta (crítico)</option>
+                <option value="seguimiento">Seguimiento preventivo</option>
+              </select>
+            </div>
+
+            <button
+              *ngIf="filtroRiesgoPlataforma() || filtroRiesgoPrioridad()"
+              type="button"
+              class="clear-btn"
+              (click)="limpiarFiltrosRiesgo()"
+            >
+              Limpiar filtros
+            </button>
+          </div>
+
+          <div class="toolbar__pagination">
+            <span class="range-label tabular-nums">{{ rangoMostradoRiesgo() }}</span>
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="offsetRiesgo() === 0 || loadingRiesgo()"
+              (click)="paginaAnteriorRiesgo()"
+            >
+              Anterior
+            </button>
+            <span class="page-indicator tabular-nums">
+              {{ paginaActualRiesgo() }} / {{ totalPaginasRiesgo() }}
+            </span>
+            <button
+              type="button"
+              class="page-btn"
+              [disabled]="offsetRiesgo() + riesgoPageSize >= resumenRiesgo().total_filtrados || loadingRiesgo()"
+              (click)="paginaSiguienteRiesgo()"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table table--all-center">
+            <thead>
+              <tr>
+                <th class="col-center">Miembro</th>
+                <th class="col-center">Canal principal</th>
+                <th class="col-center">Mensajes (30d)</th>
+                <th class="col-center">Reacciones (30d)</th>
+                <th class="col-center">Sentimiento</th>
+                <th class="col-center">Nivel de alerta</th>
+                <th class="col-center">Última actividad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of riesgo()">
+                <td class="col-center">
+                  <div class="user-cell user-cell--centered">
+                    <div class="avatar avatar--sm">{{ initials(u.alias) }}</div>
+                    <div class="user-cell__meta">
+                      <div class="strong">{{ u.alias }}</div>
+                      <code class="mono muted">{{ u.id_usuario }}</code>
+                    </div>
+                  </div>
+                </td>
+                <td class="col-center"><span class="pill pill--neutral">{{ u.plataforma_principal }}</span></td>
+                <td class="col-center tabular-nums strong">{{ u.mensajes_30d }}</td>
+                <td class="col-center tabular-nums strong">{{ u.reacciones_30d }}</td>
+                <td class="col-center">
+                  <span class="pill" [ngClass]="sentPill(u.sentimiento_promedio)">
+                    {{ fmt(u.sentimiento_promedio) }}
+                  </span>
+                </td>
+                <td class="col-center">
+                  <span class="pill" [ngClass]="prioridadRiesgo(u.sentimiento_promedio).clase">
+                    {{ prioridadRiesgo(u.sentimiento_promedio).label }}
+                  </span>
+                </td>
+                <td class="col-center muted nowrap">{{ u.ultima_actividad | date: 'dd MMM yyyy' }}</td>
+              </tr>
+              <tr *ngIf="!riesgo().length && !loading()">
+                <td colspan="7" class="empty">No se registran miembros en riesgo actualmente.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="footer">&copy; 2026 Community 360 · Plataforma de Inteligencia de Comunidades</footer>
+    </main>
+
+    <!-- ======================================================================= -->
+    <!-- APARTADO 4: MAPA DE CALOR GEOGRÁFICO (EXCLUSIVO)                        -->
+    <!-- ======================================================================= -->
+    <main class="content view-fade" *ngIf="activeView() === 'mapa'">
+      <section class="kpi-grid">
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Coordenadas activas</span>
+            <div class="kpi__icon kpi__icon--indigo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">{{ (mapaGeo()?.puntos?.length || 0) | number }}</div>
+          <div class="kpi__foot">Ubicaciones con consentimiento</div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Ciudades representadas</span>
+            <div class="kpi__icon kpi__icon--cyan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">{{ (mapaGeo()?.ciudades?.length || 0) | number }}</div>
+          <div class="kpi__foot">Núcleos urbanos activos</div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Países con presencia</span>
+            <div class="kpi__icon kpi__icon--emerald">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value tabular-nums">{{ (geo()?.paises?.length || 0) | number }}</div>
+          <div class="kpi__foot">Alcance internacional</div>
+        </article>
+
+        <article class="kpi">
+          <div class="kpi__head">
+            <span>Principal concentración</span>
+            <div class="kpi__icon kpi__icon--rose">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi__value kpi__value--city">{{ ciudadPrincipal()?.ciudad || '—' }}</div>
+          <div class="kpi__foot">{{ ciudadPrincipal()?.total_usuarios || 0 }} miembros localizados</div>
+        </article>
+      </section>
+
+      <section class="grid grid--map">
+        <article class="panel panel--flush map-panel">
+          <header class="map-toolbar">
+            <div class="map-toolbar__title">
+              <h2>Densidad geográfica de la comunidad</h2>
+              <span class="pill pill--emerald">Privacidad garantizada</span>
+            </div>
+
+            <div class="map-toolbar__controls">
+              <button type="button" class="page-btn" (click)="enfocarMexico()">México</button>
+              <button type="button" class="page-btn" (click)="vistaGlobalMapa()">Vista global</button>
+              <button
+                type="button"
+                class="page-btn"
+                [class.page-btn--active]="mostrarMarcadores()"
+                (click)="toggleMarcadoresMapa()"
+              >
+                {{ mostrarMarcadores() ? 'Ocultar nodos' : 'Mostrar nodos' }}
+              </button>
+            </div>
+          </header>
+
+          <div class="map-stage">
+            <div #geoMapContainer class="map-canvas"></div>
+
+            <div class="map-legend">
+              <span class="map-legend__title">Concentración</span>
+              <div class="map-legend__scale">
+                <span>Baja</span>
+                <div class="map-legend__gradient"></div>
+                <span>Alta</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel panel--flush">
+          <header class="panel__head panel__head--pad">
+            <div>
+              <h2>Directorio de ciudades</h2>
+              <p>Seleccione una ciudad para enfocarla en el mapa</p>
+            </div>
+          </header>
+
+          <ul class="city-nav-list">
+            <li
+              *ngFor="let c of mapaGeo()?.ciudades || []"
+              [class.active]="ciudadSeleccionada() === c.ciudad"
+              (click)="enfocarCiudad(c)"
+            >
+              <div class="city-nav-list__info">
+                <strong>{{ c.ciudad }}</strong>
+                <small>{{ c.estado }} · {{ c.pais }}</small>
+              </div>
+              <div class="city-nav-list__metrics">
+                <span class="pill" [ngClass]="sentPill(c.sentimiento_promedio)">
+                  {{ fmt(c.sentimiento_promedio) }}
+                </span>
+                <b class="tabular-nums">{{ c.total_usuarios }}</b>
+              </div>
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <footer class="footer">&copy; 2026 Community 360 · Plataforma de Inteligencia de Comunidades</footer>
+    </main>
+  </div>
+
+  <!-- ================= TOASTS ================= -->
+  <div class="toasts">
+    <div *ngFor="let t of toasts()" class="toast" [ngClass]="'toast--' + t.kind">
+      <div class="toast__icon">
+        <svg *ngIf="t.kind === 'create'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <svg *ngIf="t.kind === 'update'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+        </svg>
+        <svg *ngIf="t.kind === 'delete'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+        </svg>
+      </div>
+      <div class="toast__body">
+        <strong>{{ t.title }}</strong>
+        <span>{{ t.detail }}</span>
+      </div>
+      <button type="button" class="toast__close" (click)="dismissToast(t.id)">×</button>
+    </div>
+  </div>
+</div>

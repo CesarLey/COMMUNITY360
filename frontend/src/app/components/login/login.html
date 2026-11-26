@@ -1,0 +1,226 @@
+<div class="auth-shell">
+  <!-- Panel izquierdo: Presentación del sistema -->
+  <aside class="brand-panel">
+    <div class="brand-panel__grid"></div>
+    <div class="brand-panel__glow brand-panel__glow--one"></div>
+    <div class="brand-panel__glow brand-panel__glow--two"></div>
+
+    <div class="brand-panel__inner">
+      <header class="brand-panel__top">
+        <div class="brand-mark">
+          <div class="brand-mark__logo">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <div class="brand-mark__text">
+            <span class="brand-mark__name">Community 360</span>
+            <span class="brand-mark__tag">Analítica de Comunidades</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="brand-panel__hero">
+        <div class="hero-pill">
+          <span class="hero-pill__dot"></span>
+          <span>Monitoreo en tiempo real</span>
+        </div>
+
+        <h1 class="brand-panel__headline">
+          Comprenda el pulso, la salud y el sentimiento de su comunidad digital.
+        </h1>
+
+        <p class="brand-panel__lead">
+          Centralice las conversaciones de sus canales sociales, detecte tendencias temáticas y anticipe el riesgo de abandono desde una consola unificada.
+        </p>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-item__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+            <div class="feature-item__body">
+              <h3>Análisis de Sentimiento Multicanal</h3>
+              <p>Evaluación continua de publicaciones, reacciones y temas en Telegram, Discord, Instagram, TikTok, Facebook y X.</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-item__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div class="feature-item__body">
+              <h3>Retención y Alertas de Abandono</h3>
+              <p>Identificación prioritaria de miembros con baja actividad o percepción negativa para seguimiento oportuno.</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-item__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <div class="feature-item__body">
+              <h3>Privacidad y Consentimiento de Datos</h3>
+              <p>Métricas demográficas por país y ciudad calculadas únicamente sobre miembros con autorización activa.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="brand-panel__footer">
+        <span>&copy; 2026 Community 360</span>
+        <span>Privacidad verificada</span>
+      </footer>
+    </div>
+  </aside>
+
+  <!-- Panel derecho: Formulario de acceso -->
+  <section class="form-panel">
+    <div class="form-panel__topbar">
+      <div class="mobile-brand">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span>Community 360</span>
+      </div>
+
+      <button
+        type="button"
+        class="theme-switch"
+        (click)="toggleTheme()"
+        [attr.aria-label]="(theme$ | async) === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+      >
+        <ng-container *ngIf="(theme$ | async) === 'dark'; else moonIcon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <span>Modo claro</span>
+        </ng-container>
+        <ng-template #moonIcon>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span>Modo oscuro</span>
+        </ng-template>
+      </button>
+    </div>
+
+    <div class="auth-box">
+      <div class="auth-box__header">
+        <h2>Iniciar sesión</h2>
+        <p>Ingrese sus credenciales para acceder a la consola analítica.</p>
+      </div>
+
+      <form class="auth-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="error-banner" *ngIf="error()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>{{ error() }}</span>
+        </div>
+
+        <div class="form-field" [class.form-field--invalid]="idCtrl.invalid && idCtrl.touched">
+          <label for="identificador">Usuario o correo electrónico</label>
+          <div class="input-control">
+            <span class="input-control__icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+            <input
+              id="identificador"
+              type="text"
+              formControlName="identificador"
+              placeholder="nombre@organizacion.com o usuario"
+              autocomplete="username"
+            />
+          </div>
+          <small class="field-hint-error" *ngIf="idCtrl.invalid && idCtrl.touched">
+            Ingrese un usuario o correo electrónico válido.
+          </small>
+        </div>
+
+        <div class="form-field" [class.form-field--invalid]="passCtrl.invalid && passCtrl.touched">
+          <label for="password">Contraseña</label>
+          <div class="input-control">
+            <span class="input-control__icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+            <input
+              id="password"
+              [type]="showPass() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••••••"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="input-control__toggle"
+              (click)="togglePass()"
+              [attr.aria-label]="showPass() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              <svg *ngIf="!showPass()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg *ngIf="showPass()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+          <small class="field-hint-error" *ngIf="passCtrl.invalid && passCtrl.touched">
+            Ingrese su contraseña (mínimo 6 caracteres).
+          </small>
+        </div>
+
+        <button type="submit" class="submit-button" [disabled]="loading()">
+          <ng-container *ngIf="!loading(); else loadingTpl">
+            <span>Continuar al panel</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </ng-container>
+          <ng-template #loadingTpl>
+            <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+            </svg>
+            <span>Verificando acceso...</span>
+          </ng-template>
+        </button>
+      </form>
+
+      <p class="auth-box__notice">
+        Acceso restringido a personal autorizado. Si requiere asistencia con su cuenta, comuníquese con el administrador de su organización.
+      </p>
+    </div>
+  </section>
+</div>

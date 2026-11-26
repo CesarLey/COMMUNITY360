@@ -1,0 +1,22 @@
+id_ciudad,nombre,id_estado,zona_horaria
+1,Buenos Aires,1,America/Argentina/Buenos_Aires
+2,Santiago,2,America/Santiago
+3,Bogotá,3,America/Bogota
+4,Madrid,4,Europe/Madrid
+5,Los Ángeles,5,America/Los_Angeles
+6,Houston,6,America/Chicago
+7,Tijuana,7,America/Tijuana
+8,Campeche,8,America/Merida
+9,Ciudad de México,9,America/Mexico_City
+10,Chihuahua,10,America/Chihuahua
+11,León,11,America/Mexico_City
+12,Guadalajara,12,America/Mexico_City
+13,Monterrey,13,America/Monterrey
+14,Oaxaca,14,America/Mexico_City
+15,Puebla,15,America/Mexico_City
+16,Querétaro,16,America/Mexico_City
+17,Cancún,17,America/Cancun
+18,Villahermosa,18,America/Mexico_City
+19,Veracruz,19,America/Mexico_City
+20,Mérida,20,America/Merida
+21,Lima,21,America/Lima
