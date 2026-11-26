@@ -13,6 +13,7 @@ const {
   Packer,
   Paragraph,
   TextRun,
+  ImageRun,
   HeadingLevel,
   AlignmentType,
   Table,
@@ -184,24 +185,73 @@ function celdaAPA(texto, opts = {}) {
   });
 }
 
-function bloqueFiguraAPA(numFigura, tituloFigura, instruccionCaptura, notaFuncional) {
-  const bordePunteado = { style: BorderStyle.DASHED, size: 6, color: BORDER_COLOR };
-  return [
-    parrafo(`Figura ${numFigura}`, {
-      bold: true,
-      indentFirstLine: false,
-      spaceBefore: 240,
-      spaceAfter: 40,
-      line: 360
-    }),
-    parrafo(tituloFigura, {
-      italic: true,
-      indentFirstLine: false,
-      spaceBefore: 0,
-      spaceAfter: 100,
-      line: 360
-    }),
-    new Table({
+function leerDimensionesImagen(buffer) {
+  // PNG: firma 89 50 4E 47, ancho/alto en bytes 16..23
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) {
+    return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20), type: 'png' };
+  }
+  // JPEG: recorrer marcadores hasta SOF0/SOF1/SOF2 (FF C0..C3)
+  if (buffer[0] === 0xff && buffer[1] === 0xd8) {
+    let i = 2;
+    while (i < buffer.length - 9) {
+      if (buffer[i] !== 0xff) {
+        i++;
+        continue;
+      }
+      const marker = buffer[i + 1];
+      if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
+        return {
+          height: buffer.readUInt16BE(i + 5),
+          width: buffer.readUInt16BE(i + 7),
+          type: 'jpg'
+        };
+      }
+      if (marker === 0xd9 || marker === 0xda) break;
+      const segLen = buffer.readUInt16BE(i + 2);
+      if (segLen < 2) break;
+      i += 2 + segLen;
+    }
+  }
+  return { width: 1280, height: 720, type: 'jpg' };
+}
+
+function resolverArchivoCaptura(baseName) {
+  if (!baseName) return null;
+  const dir = path.join(__dirname, '..', 'docs', 'capturas');
+  for (const ext of ['', '.jpg', '.jpeg', '.png']) {
+    const p = path.join(dir, baseName + ext);
+    if (fs.existsSync(p)) return p;
+  }
+  return null;
+}
+
+function bloqueFiguraAPA(numFigura, tituloFigura, instruccionCaptura, notaFuncional, archivoCaptura = null) {
+  const rutaImg = resolverArchivoCaptura(archivoCaptura);
+  let bloqueVisual;
+
+  if (rutaImg) {
+    const data = fs.readFileSync(rutaImg);
+    const dims = leerDimensionesImagen(data);
+    const targetWidth = 600; // ~15.9 cm, encaja limpio en márgenes APA de 2.54 cm
+    const targetHeight = Math.round((dims.height / dims.width) * targetWidth);
+
+    bloqueVisual = new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 60, after: 80, line: 240 },
+      children: [
+        new ImageRun({
+          type: dims.type,
+          data,
+          transformation: {
+            width: targetWidth,
+            height: targetHeight
+          }
+        })
+      ]
+    });
+  } else {
+    const bordePunteado = { style: BorderStyle.DASHED, size: 6, color: BORDER_COLOR };
+    bloqueVisual = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       rows: [
         new TableRow({
@@ -234,7 +284,25 @@ function bloqueFiguraAPA(numFigura, tituloFigura, instruccionCaptura, notaFuncio
           ]
         })
       ]
+    });
+  }
+
+  return [
+    parrafo(`Figura ${numFigura}`, {
+      bold: true,
+      indentFirstLine: false,
+      spaceBefore: 240,
+      spaceAfter: 40,
+      line: 360
     }),
+    parrafo(tituloFigura, {
+      italic: true,
+      indentFirstLine: false,
+      spaceBefore: 0,
+      spaceAfter: 100,
+      line: 360
+    }),
+    bloqueVisual,
     parrafo(
       [
         { text: 'Nota. ', italic: true },
@@ -583,67 +651,99 @@ async function generarDocumento() {
             'Representa sobre cartografía de MapTiler las 793 ubicaciones con consentimiento distribuidas en 21 ciudades y 7 países (destacando Ciudad de México con 149 miembros y Mérida con 118). Aporta valor directo para decidir en qué ciudades organizar reuniones o convenciones presenciales respetando la privacidad de quienes no dieron autorización.'
           ),
 
-          titulo2('Vistas del Sistema y Descripción Funcional'),
+          titulo2('Vistas del Sistema Desplegado y Descripción Funcional'),
 
           ...bloqueFiguraAPA(
             1,
-            'Pantalla de inicio de sesión (/login) en modo claro y modo oscuro',
+            'Pantalla de inicio de sesión desplegada en producción (/login)',
             'Pantalla de Login de Community 360',
-            'Vista de acceso restringido con validación de credenciales contra Turso, resumen funcional de la plataforma y selector de tema visual.'
+            'Vista pública en Render con validación de credenciales contra Turso, síntesis funcional de la suite y cambio entre modo claro y oscuro.',
+            'fig1_login'
           ),
 
           ...bloqueFiguraAPA(
             2,
             'Apartado exclusivo de Resumen ejecutivo (/dashboard/resumen)',
             'Vista completa del módulo Resumen general',
-            'Presenta los cuatro KPIs principales, la evolución diaria de sentimiento y volumen, la participación por canal, la matriz Canal × Tema y el panel de actividad reciente.'
+            'Concentra los cuatro KPIs globales (1,068 miembros, 208 conversaciones, sentimiento +0.30 y 421 alertas), la serie histórica combinada, las barras por canal y la matriz Canal × Tema.',
+            'fig2_resumen'
           ),
 
           ...bloqueFiguraAPA(
             3,
-            'Apartado exclusivo del Explorador de interacciones (/dashboard/interacciones)',
+            'Apartado del Explorador de interacciones con filtrado dinámico (/dashboard/interacciones)',
             'Vista del módulo Interacciones aplicando filtros por canal y temática',
-            'Muestra el recálculo dinámico de sentimiento e impacto del segmento filtrado, la tabla paginada con etiquetas y el flujo lateral en tiempo real.'
+            'Consulta filtrada para el canal Telegram, temática Reglas y moderación y tipo Mensaje: las tarjetas superiores recalculan en vivo las 8 coincidencias, el sentimiento del segmento (+0.21 Neutral) y las 19 reacciones acumuladas.',
+            'fig3_interacciones'
           ),
 
           ...bloqueFiguraAPA(
             4,
-            'Apartado exclusivo de Comunidad y retención (/dashboard/comunidad)',
-            'Vista del módulo Comunidad y riesgo con filtros y paginación activos',
-            'Integra métricas de salud comunitaria, principales ciudades, distribución por país y la tabla paginada de seguimiento de miembros en riesgo de abandono.'
+            'Apartado de Comunidad y retención: indicadores globales y demografía (/dashboard/comunidad)',
+            'Vista superior del módulo Comunidad y riesgo',
+            'Muestra la proporción de miembros estables (647; 60.6 %) frente a perfiles en riesgo (421; 39.4 %), las principales ciudades autorizadas y la gráfica de dona por país.',
+            'fig4_comunidad_general'
           ),
 
           ...bloqueFiguraAPA(
             5,
-            'Apartado exclusivo del Mapa de calor geográfico (/dashboard/mapa) en modo claro y oscuro',
-            'Vista del Mapa de calor con MapTiler Cloud y directorio de ciudades',
-            'Visualiza la concentración térmica de las 793 coordenadas con consentimiento activo y permite enfocar cualquiera de las 21 ciudades con su sentimiento promedio.'
-          ),
-
-          titulo2('Pruebas Funcionales de Actualización en Vivo (Postman + WebSockets)'),
-          parrafo(
-            'A continuación se documentan las tres pruebas funcionales en pantalla dividida (petición ejecutada desde Postman junto con la reacción automática del dashboard en el navegador sin recargar la página):'
+            'Tabla paginada de miembros en riesgo filtrada por canal y prioridad crítica',
+            'Tabla inferior de Comunidad y riesgo filtrando Discord y Prioridad alta',
+            'Al seleccionar el canal Discord y el nivel Prioridad alta (crítico), la consulta REST detecta 5 perfiles prioritarios recalculando su sentimiento medio (-0.48) y actividad promedio (4.8 msj / 30d).',
+            'fig5_comunidad_filtro'
           ),
 
           ...bloqueFiguraAPA(
             6,
-            'Prueba funcional 1: Creación de interacción en vivo mediante POST /api/interacciones',
-            'Pantalla dividida: Postman ejecutando POST (201 Created) y dashboard mostrando fila resaltada y notificación',
-            'Al enviar el POST desde Postman con token Bearer, el servidor inserta en Turso y emite INTERACCION_CREADA; el dashboard incrementa el contador total, inserta la fila al inicio con animación y muestra el aviso emergente.'
+            'Apartado del Mapa de calor geográfico a escala nacional (/dashboard/mapa)',
+            'Vista del Mapa de calor con MapTiler Cloud y directorio de 21 ciudades',
+            'Representa las 793 ubicaciones con consentimiento activo sobre cartografía de MapTiler Cloud y Leaflet Canvas, acompañadas del directorio interactivo de las 21 ciudades.',
+            'fig6_mapa_mexico'
           ),
 
           ...bloqueFiguraAPA(
             7,
-            'Prueba funcional 2: Modificación en vivo mediante PUT /api/interacciones/:id',
-            'Pantalla dividida: Postman ejecutando PUT (200 OK) y dashboard actualizando sentimiento y texto en tiempo real',
-            'Al modificar el sentimiento y el contenido desde Postman, el evento INTERACCION_ACTUALIZADA actualiza el registro en pantalla y recalcula el sentimiento promedio sin refrescar el navegador.'
+            'Acercamiento metropolitano del Mapa de calor sobre Ciudad de México',
+            'Detalle urbano del mapa térmico enfocando Ciudad de México',
+            'Al seleccionar Ciudad de México en el directorio lateral (149 miembros localizados y sentimiento medio de +0.27), el mapa desplaza la cámara y detalla la densidad térmica por zona urbana.',
+            'fig7_mapa_cdmx'
+          ),
+
+          titulo2('Pruebas Funcionales de Actualización en Vivo (Postman + WebSockets)'),
+          parrafo(
+            'A continuación se documenta en pantalla dividida la autenticación del usuario docente en Postman y las tres pruebas funcionales obligatorias (POST, PUT y DELETE) ejecutadas contra el servidor desplegado en Render, verificando que el navegador actualice sus métricas y registros en tiempo real mediante WebSockets sin recargar la página:'
           ),
 
           ...bloqueFiguraAPA(
             8,
-            'Prueba funcional 3: Eliminación en vivo mediante DELETE /api/interacciones/:id',
-            'Pantalla dividida: Postman ejecutando DELETE (200 OK) y dashboard retirando el registro automáticamente',
-            'Al eliminar la interacción desde Postman, el servidor propaga INTERACCION_ELIMINADA; el panel retira la fila de inmediato, registra la acción en el historial en vivo y ajusta los indicadores globales.'
+            'Autenticación previa en Postman mediante POST /api/auth/login (200 OK)',
+            'Pantalla dividida: Postman autenticando al usuario docente y dashboard con estado base de 208 interacciones',
+            'Se obtiene el token JWT firmado para la cuenta docente lizandro.reyes mientras el navegador muestra el estado inicial de 208 interacciones registradas.',
+            'fig8_postman_login'
+          ),
+
+          ...bloqueFiguraAPA(
+            9,
+            'Prueba funcional 1: Creación en vivo mediante POST /api/interacciones (201 Created)',
+            'Pantalla dividida: Postman ejecutando POST y dashboard incrementando a 209 con aviso emergente',
+            'Al insertar el folio I9000001 en Discord con sentimiento +0.85 desde Postman, el evento WebSocket incrementa de inmediato el contador de 208 a 209, agrega la fila al inicio de la tabla y despliega la notificación Nueva interacción registrada.',
+            'fig9_postman_post'
+          ),
+
+          ...bloqueFiguraAPA(
+            10,
+            'Prueba funcional 2: Modificación en vivo mediante PUT /api/interacciones/I9000001 (200 OK)',
+            'Pantalla dividida: Postman ejecutando PUT y dashboard actualizando sentimiento a -0.60 en tiempo real',
+            'Al actualizar el texto y cambiar el sentimiento a -0.60 desde Postman, la fila I9000001 refleja el cambio en color rojo al instante, aparece la etiqueta Actualizada en el flujo en tiempo real y se muestra el aviso Interacción modificada sin recargar.',
+            'fig10_postman_put'
+          ),
+
+          ...bloqueFiguraAPA(
+            11,
+            'Prueba funcional 3: Eliminación en vivo mediante DELETE /api/interacciones/I9000001 (200 OK)',
+            'Pantalla dividida: Postman ejecutando DELETE y dashboard retirando la fila y registrando la baja',
+            'Al eliminar I9000001 desde Postman, la fila desaparece automáticamente de la tabla, el contador lateral regresa a 208, el panel de flujo conserva la trazabilidad completa (Nueva, Actualizada y Removida) y se muestra la alerta Interacción eliminada.',
+            'fig11_postman_delete'
           ),
 
           // -----------------------------------------------------------------
@@ -755,8 +855,18 @@ async function generarDocumento() {
 
   const buffer = await Packer.toBuffer(doc);
   const outPath = path.join(__dirname, '..', 'docs', 'PROY_U3_Final_Ley_Cesar.docx');
-  fs.writeFileSync(outPath, buffer);
-  console.log(`✓ Documento Word (.docx) actualizado en: ${outPath} (${buffer.length} bytes)`);
+  try {
+    fs.writeFileSync(outPath, buffer);
+    console.log(`✓ Documento Word (.docx) actualizado en: ${outPath} (${buffer.length} bytes)`);
+  } catch (e) {
+    if (e.code === 'EBUSY') {
+      const altPath = path.join(__dirname, '..', 'docs', 'PROY_U3_Final_Ley_Cesar_Actualizado.docx');
+      fs.writeFileSync(altPath, buffer);
+      console.log(`AVISO: ${outPath} esta abierto en Word; se guardo copia completa en: ${altPath} (${buffer.length} bytes)`);
+    } else {
+      throw e;
+    }
+  }
 }
 
 generarDocumento().catch((err) => {
