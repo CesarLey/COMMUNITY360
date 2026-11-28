@@ -9,7 +9,6 @@
   <img src="https://img.shields.io/badge/Turso-libSQL_(3NF)-4ff8d2?style=for-the-badge&logo=sqlite&logoColor=0f172a" alt="Turso libSQL" />
   <img src="https://img.shields.io/badge/Firestore-NoSQL_Audit-ffca28?style=for-the-badge&logo=firebase&logoColor=0f172a" alt="Firebase Firestore" />
   <img src="https://img.shields.io/badge/WebSockets-Real--Time-6366f1?style=for-the-badge" alt="WebSockets" />
-  <img src="https://img.shields.io/badge/Tests-21%2F21_Passing-10b981?style=for-the-badge" alt="Tests 21/21" />
 </p>
 
 Plataforma integral de inteligencia y observabilidad para comunidades digitales multicanal (**Telegram, Discord, Facebook, Instagram, TikTok y Twitter/X**). Combina un pipeline **ETL de 8 etapas**, **persistencia híbrida en la nube** (**Turso SQL en 3FN** + **Google Cloud Firestore NoSQL**), una **API RESTful protegida con JWT**, sincronización reactiva mediante **WebSockets (`ws`)** y una consola analítica modular construida en **Angular 20** con cartografía térmica de **MapTiler Cloud + Leaflet Canvas**.
@@ -162,21 +161,6 @@ Para recompilar el frontend Angular tras realizar cambios en `frontend/src/`:
 
 ```bash
 npm run build:front
-```
-
----
-
-## 🧪 Pruebas Automatizadas
-
-El proyecto incluye **21 pruebas automatizadas** con el runner nativo `node:test` que validan:
-- **Fase 2 (`tests/clean.test.js` — 10 pruebas):** Estandarización de fechas, normalización 3FN, eliminación de ubicación sin consentimiento, cuarentena de usuarios inexistentes y deduplicación de etiquetas.
-- **Fase 3 (`tests/auth.test.js` — 5 pruebas):** Hashing con `bcrypt`, firma/verificación de JWT y bloqueo de accesos sin token o sin rol administrativo.
-- **Fase 4 (`tests/rest.test.js` — 5 pruebas):** Paginación de interacciones, cálculo de KPIs, validación de integridad referencial (`400`), ciclo completo CRUD (`POST → GET → PUT → DELETE`) y protección `401`.
-- **Fase 5 (`tests/ws.test.js` — 1 prueba E2E):** Conexión WebSocket y recepción en tiempo real de `INTERACCION_CREADA`, `INTERACCION_ACTUALIZADA` e `INTERACCION_ELIMINADA`.
-
-```bash
-# Con el servidor activo en otra terminal (npm start):
-npm test
 ```
 
 ---
