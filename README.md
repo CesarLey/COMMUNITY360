@@ -61,44 +61,6 @@ flowchart LR
 
 ---
 
-## 🖥️ Módulos de la Consola Analítica (Angular 20)
-
-La interfaz cuenta con soporte completo de **Modo Oscuro y Modo Claro**, rutas protegidas por `authGuard` y cuatro apartados independientes:
-
-### 1. Acceso Corporativo (`/login`)
-Autenticación mediante usuario o correo electrónico contra hashes `bcrypt` almacenados en Turso y emisión de sesión JWT por 8 horas.
-
-![Login Community 360](./docs/capturas/fig1_login.jpg)
-
-### 2. Resumen Ejecutivo (`/dashboard/resumen`)
-Tarjetas KPI globales, gráfica combinada de evolución diaria de sentimiento y volumen, distribución por red social, matriz de calor **Canal × Tema** y línea de tiempo de actividad en vivo.
-
-![Resumen Ejecutivo](./docs/capturas/fig2_resumen.jpg)
-
-### 3. Explorador de Interacciones (`/dashboard/interacciones`)
-Monitoreo paginado con **filtros dinámicos por Canal, Categoría temática y Tipo de publicación** que recalculan en vivo el volumen del segmento, su sentimiento promedio y el impacto en reacciones, junto con el panel lateral de eventos WebSocket.
-
-![Explorador de Interacciones](./docs/capturas/fig3_interacciones.jpg)
-
-### 4. Comunidad y Retención (`/dashboard/comunidad`)
-Seguimiento de salud comunitaria (**647 miembros estables vs. 421 en riesgo de abandono**), ranking de principales ciudades autorizadas, gráfica por país y tabla paginada con filtrado por **Canal principal** y **Nivel de alerta** (*Prioridad alta* $\le -0.35$ vs. *Seguimiento preventivo*).
-
-![Comunidad y Retención](./docs/capturas/fig4_comunidad_general.jpg)
-
-### 5. Mapa de Calor Geográfico (`/dashboard/mapa`)
-Cartografía interactiva impulsada por **MapTiler Cloud API** (`basic-v2` y `basic-v2-dark`) y **Leaflet HTML5 Canvas 2D**, proyectando la densidad espacial de las **793 coordenadas con consentimiento activo** a través de **21 ciudades y 7 países**.
-
-| Escala Nacional y Directorio de Ciudades | Acercamiento Metropolitano (CDMX · 149 miembros) |
-| :---: | :---: |
-| ![Mapa Nacional](./docs/capturas/fig6_mapa_mexico.jpg) | ![Mapa CDMX](./docs/capturas/fig7_mapa_cdmx.jpg) |
-
-### 6. Reactividad en Tiempo Real (Postman → WebSockets → Dashboard)
-Prueba funcional en pantalla dividida enviando `POST /api/interacciones` desde Postman y actualizando instantáneamente contadores, fila resaltada y notificaciones en el navegador:
-
-![Reactividad WebSocket con Postman](./docs/capturas/fig9_postman_post.jpg)
-
----
-
 ## 🔌 Catálogo de Endpoints de la API REST (15 Rutas)
 
 Todas las rutas analíticas y transaccionales están protegidas por el middleware `verificarAuth` (token JWT en header `Authorization: Bearer <token>` o cookie `httpOnly`).
@@ -134,9 +96,8 @@ community360/
 │   ├── schema.sql               # Esquema relacional 3FN en SQLite/libSQL con FKs, índices y CHECKs
 │   └── consultas_evidencia.sql  # Consultas analíticas de verificación
 ├── docs/
-│   ├── capturas/                # Evidencias gráficas del sistema desplegado y pruebas con Postman
-│   ├── Community360.postman_collection.json
-│   └── PROY_U3_Final_Ley_Cesar.docx
+│   ├── fase1_modelado.md        # Documentación de modelado y arquitectura híbrida
+│   └── Community360.postman_collection.json
 ├── etl/
 │   ├── clean.js                 # Pipeline ETL de 8 etapas (sin dependencias externas)
 │   ├── load.js                  # Carga idempotente hacia Turso (SQL) y Firestore (NoSQL)

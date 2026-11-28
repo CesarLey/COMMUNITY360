@@ -4,6 +4,11 @@
 serviceAccount*.json
 ~$*
 
+# Capturas y documentos de entrega local
+docs/capturas/
+docs/*.docx
+docs/*.pdf
+
 # Dependencias y cachés de compilación
 node_modules/
 frontend/node_modules/
